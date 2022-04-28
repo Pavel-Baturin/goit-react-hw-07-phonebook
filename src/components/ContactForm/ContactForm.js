@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { addContact } from '../../redux/actions';
+import {
+  useAddContactMutation,
+  useGetContactQuery,
+} from '../../redux/contactApi';
+import toast from 'react-hot-toast';
 import s from './ContactForm.module.css';
 
 function ContactForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
-
-  const dispatch = useDispatch();
-  const contacts = useSelector(state => state.contacts.items);
+  const [addContact] = useAddContactMutation();
+  const { data: contacts, isSuccess } = useGetContactQuery();
 
   const handleInputChange = e => {
     const { name, value } = e.target;
@@ -26,15 +28,23 @@ function ContactForm() {
     }
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setName('');
-    setNumber('');
-    if (contacts.some(contact => contact.name === name)) {
-      alert(`${name} is already in contacts.`);
+    const findContact = await contacts?.some(contact =>
+      contact.name.toLowerCase().includes(name.toLowerCase())
+    );
+
+    if (findContact) {
+      toast.error(`${name} is already in contacts!!!`);
       return;
     }
-    dispatch(addContact(name, number));
+    await addContact(name, number);
+    if (isSuccess) {
+      toast.success(`${name} added to contact list`);
+    }
+
+    setName('');
+    setNumber('');
   };
 
   return (

@@ -1,3 +1,11 @@
+.box {
+  display: flex;
+  justify-content: center;
+}
+
 .title {
-  text-align: center;
+  padding: 10px;
+  background-color: #efefef;
+  border: solid 2px black;
+  border-radius: 5px;
 }

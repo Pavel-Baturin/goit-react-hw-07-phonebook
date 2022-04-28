@@ -1,14 +1,16 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { deleteContact } from '../../redux/actions';
+import { useSelector } from 'react-redux';
+import { useGetContactQuery } from '../../redux/contactApi';
+import { TailSpin } from 'react-loader-spinner';
+import ContactItem from '../ContactItem/ContactItem';
 import s from './ContactList.module.css';
 
-function ContactList() {
-  const contacts = useSelector(state => state.contacts.items);
-  const filter = useSelector(state => state.contacts.filter);
-  const dispatch = useDispatch();
+export default function ContactList() {
+  const { data: contacts, isFetching, error, isError } = useGetContactQuery();
+
+  const filter = useSelector(state => state.filter.value);
   const getFiltredContacts = () => {
     const normalizedFilter = filter.toLowerCase();
-    return contacts.filter(contact =>
+    return contacts?.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
@@ -16,20 +18,13 @@ function ContactList() {
 
   return (
     <ul className={s.list}>
-      {filtredContacts.map(({ id, name, number }) => (
-        <li className={s.item} key={id}>
-          {name}: {number}
-          <button
-            className={s.button}
-            type="button"
-            onClick={() => dispatch(deleteContact(id))}
-          >
-            Delete
-          </button>
-        </li>
-      ))}
+      {isFetching && <TailSpin color="lightblue" height={200} width={200} />}
+      {isError && <div className={s.error}>{error.status} </div>}
+      {filtredContacts &&
+        !isFetching &&
+        filtredContacts.map(contact => (
+          <ContactItem key={contact.id} {...contact} />
+        ))}
     </ul>
   );
 }
-
-export default ContactList;
